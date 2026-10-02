@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calcolatore Offerte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: header strip, then two panels side by side (inputs left, results right); stacks to one column on phones. */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #16202b;
+  --muted: #5b6876;
+  --line: #dde3e9;
+  --accent: #1f5f8b;
+  --accent-soft: #e4eef6;
+  --good: #1e7a4c;
+  --good-soft: #e3f3ea;
+  --warn: #a8670a;
+  --warn-soft: #fbefd9;
+  --bad: #b3362b;
+  --bad-soft: #f9e3e0;
+  --track: #e6eaee;
+  --shadow: 0 1px 2px rgba(22, 32, 43, .05), 0 8px 24px rgba(22, 32, 43, .06);
+  --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #17202a; --ink: #e8edf2; --muted: #93a1af; --line: #2a3643;
+    --accent: #6fb0de; --accent-soft: #1b3346;
+    --good: #5cc890; --good-soft: #163527; --warn: #e6a943; --warn-soft: #3a2c12;
+    --bad: #f07b70; --bad-soft: #3d1c19; --track: #26323e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e8edf2; --muted: #93a1af; --line: #2a3643;
+  --accent: #6fb0de; --accent-soft: #1b3346;
+  --good: #5cc890; --good-soft: #163527; --warn: #e6a943; --warn-soft: #3a2c12;
+  --bad: #f07b70; --bad-soft: #3d1c19; --track: #26323e;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 40px 56px;
+  display: grid;
+  gap: 28px;
+}
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.eyebrow {
+  font-family: var(--font-data);
+  font-size: 11.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+h1 { font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -.015em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 52ch; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.panel h2 {
+  font-family: var(--font-data);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Inputs */
+.field { display: grid; gap: 8px; }
+.field label, .field .label { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.hint { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.input {
+  display: flex; align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  transition: border-color .15s, box-shadow .15s;
+}
+.input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input span { padding-inline: 12px; color: var(--muted); font-family: var(--font-data); font-size: 14px; }
+.input input {
+  flex: 1; min-width: 0;
+  border: 0; background: transparent; outline: none;
+  color: var(--ink);
+  font: 600 18px/1 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  padding: 12px 12px 12px 0;
+}
+.input input::-webkit-outer-spin-button, .input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+.disc-value {
+  font-size: 28px; font-weight: 700; letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--tone, var(--ink));
+  transition: color .2s;
+}
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 28px; margin: 0;
+  background: transparent; cursor: pointer;
+}
+input[type=range]:focus-visible { outline: none; }
+input[type=range]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(to right, var(--tone) 0 var(--p), var(--track) var(--p) 100%);
+}
+input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--track); }
+input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--tone); }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; margin-top: -8px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--tone);
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  transition: transform .1s;
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--tone);
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+}
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.12); }
+input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--accent-soft); }
+input[type=range]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--accent-soft); }
+
+/* Zone scale under the slider: 0–10 green, 11–20 amber, over 20 red (proportional widths) */
+.zones { display: grid; grid-template-columns: 10fr 10fr 20fr; gap: 3px; margin-top: -2px; }
+.zones div { height: 4px; border-radius: 2px; opacity: .35; transition: opacity .2s; }
+.zones div.on { opacity: 1; }
+.z-good { background: var(--good); } .z-warn { background: var(--warn); } .z-bad { background: var(--bad); }
+.ticks { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ticks span { position: relative; }
+
+/* Results */
+.status {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--tone-soft);
+  color: var(--tone);
+  transition: background .2s, color .2s;
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--tone); flex: none; box-shadow: 0 0 0 4px var(--surface); }
+.status strong { font-weight: 700; }
+.status .why { color: var(--ink); opacity: .75; font-size: 13.5px; }
+
+.figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.fig { padding: 18px 18px 16px; display: grid; gap: 4px; min-width: 0; }
+.fig + .fig { border-left: 1px solid var(--line); }
+@media (max-width: 440px) {
+  .figures { grid-template-columns: minmax(0, 1fr); }
+  .fig + .fig { border-left: 0; border-top: 1px solid var(--line); }
+}
+.fig .k { font-size: 13px; color: var(--muted); }
+.fig .v { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.fig .ref { font-family: var(--font-data); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fig .ref s { text-decoration-thickness: 1px; }
+
+.cost { display: grid; gap: 10px; }
+.cost-line { margin: 0; font-size: 15.5px; }
+.cost-line b { font-variant-numeric: tabular-nums; }
+.cost-line .neg { color: var(--tone); }
+.bar { position: relative; height: 10px; border-radius: 5px; background: var(--tone-soft); overflow: hidden; }
+.bar-keep { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 5px 0 0 5px; transition: width .12s ease-out; }
+.bar-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; font-family: var(--font-data); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+.annual { display: grid; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+.annual-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.annual-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.annual-head span { font-family: var(--font-data); font-size: 11.5px; color: var(--muted); }
+.annual-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.annual-total .v { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; color: var(--tone); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; transition: color .2s; }
+.annual-total .k { color: var(--muted); font-size: 13.5px; }
+.annual-rows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+@media (max-width: 440px) { .annual-rows { grid-template-columns: minmax(0, 1fr); } }
+.annual-rows div { background: var(--bg); border-radius: 9px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.annual-rows dt { font-size: 12px; color: var(--muted); }
+.annual-rows dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.recover { margin: 0; font-size: 15.5px; }
+.recover b { font-variant-numeric: tabular-nums; }
+.recover small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; border-top: 1px solid var(--line); padding-block-start: 18px; }
+.foot p { margin: 0; color: var(--muted); font-size: 12.5px; }
+button {
+  font: 600 14px/1 var(--font-ui);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: filter .15s;
+}
+button:hover { filter: brightness(.97); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+[data-tone="good"] { --tone: var(--good); --tone-soft: var(--good-soft); }
+[data-tone="warn"] { --tone: var(--warn); --tone-soft: var(--warn-soft); }
+[data-tone="bad"]  { --tone: var(--bad);  --tone-soft: var(--bad-soft); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main class="wrap" id="app" data-tone="good">
+  <header>
+    <div>
+      <p class="eyebrow">Strumento commerciale</p>
+      <h1>Calcolatore offerte</h1>
+      <p class="sub">Prezzo netto, commissione e impatto dello sconto, calcolati mentre muovi il cursore.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="h-in">
+      <h2 id="h-in">Dati dell'offerta</h2>
+
+      <div class="field">
+        <label for="amount">Prezzo di listino</label>
+        <div class="input"><span>€</span><input id="amount" type="number" inputmode="decimal" min="0" step="any" value="25000"></div>
+      </div>
+
+      <div class="field">
+        <div class="label"><label for="discount">Sconto</label><output class="disc-value" id="discOut" for="discount">12%</output></div>
+        <input id="discount" type="range" min="0" max="40" step="0.5" value="12" aria-describedby="h-scale">
+        <div class="zones" aria-hidden="true"><div class="z-good"></div><div class="z-warn"></div><div class="z-bad"></div></div>
+        <div class="ticks" id="h-scale"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span></div>
+      </div>
+
+      <div class="field">
+        <label for="rate">La mia commissione <span class="hint">sul prezzo scontato</span></label>
+        <div class="input"><input id="rate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="12" style="padding-left:12px"><span>%</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-out" aria-live="polite">
+      <h2 id="h-out">Risultato</h2>
+
+      <div class="status">
+        <span class="dot" aria-hidden="true"></span>
+        <div><strong id="statusLabel">Sconto moderato</strong> <span class="why" id="statusWhy">dall'11% al 20%</span></div>
+      </div>
+
+      <div class="figures">
+        <div class="fig">
+          <span class="k">Prezzo scontato</span>
+          <span class="v" id="net">€ 22.000,00</span>
+          <span class="ref">listino <s id="list">€ 25.000,00</s></span>
+        </div>
+        <div class="fig">
+          <span class="k">La mia commissione</span>
+          <span class="v" id="comm">€ 2.640,00</span>
+          <span class="ref" id="commRef">12% del prezzo scontato</span>
+        </div>
+      </div>
+
+      <div class="cost">
+        <p class="cost-line" id="costLine">Lo sconto ti costa <b class="neg">€ 360,00</b> di commissione rispetto al prezzo di listino.</p>
+        <div class="bar" role="img" id="bar" aria-label="Commissione mantenuta rispetto a quella sul listino"><div class="bar-keep" id="barKeep" style="width:88%"></div></div>
+        <div class="bar-legend">
+          <span><i class="sw" style="background:var(--accent)"></i>Mantenuta <b id="keepPct">88%</b></span>
+          <span><i class="sw" style="background:var(--tone)"></i>Persa per lo sconto <b id="lostPct">12%</b></span>
+          <span>Su listino <b id="fullComm">€ 3.000,00</b></span>
+        </div>
+      </div>
+
+      <div class="annual">
+        <div class="annual-head">
+          <h3>Impatto annuale</h3>
+          <span>10 transazioni a trimestre · 40 all'anno</span>
+        </div>
+        <div class="annual-total">
+          <span class="v" id="yearLost">€ 14.400,00</span>
+          <span class="k">di commissione persa ogni anno con questo sconto</span>
+        </div>
+        <dl class="annual-rows">
+          <div><dt>Commissione annua scontata</dt><dd id="yearComm">€ 105.600,00</dd></div>
+          <div><dt>Commissione annua su listino</dt><dd id="yearFull">€ 120.000,00</dd></div>
+          <div><dt>Persa per transazione</dt><dd id="dealLost">€ 360,00</dd></div>
+        </dl>
+        <p class="recover" id="recover">Con questo sconto, sono necessarie <b>5</b> ulteriori vendite a prezzo di listino per recuperare la commissione persa.</p>
+      </div>
+
+      <div class="foot">
+        <p>Soglie: fino al 10% contenuto, dall'11% al 20% moderato, oltre il 20% consistente.</p>
+        <button type="button" id="copy">Copia riepilogo</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var app = $("app"), amount = $("amount"), discount = $("discount"), rate = $("rate");
+  var eur = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var pct = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 });
+  var KEY = "calcolatore-offerte-v2";
+  var DEALS_PER_YEAR = 40; // 10 transazioni a trimestre
+
+  // Soglie dell'indicatore (in % di sconto)
+  var LEVELS = [
+    { max: 10,  tone: "good", label: "Sconto contenuto",   why: "fino al 10%" },
+    { max: 20,  tone: "warn", label: "Sconto moderato",    why: "dall'11% al 20%" },
+    { max: 100, tone: "bad",  label: "Sconto consistente", why: "oltre il 20%" }
+  ];
+
+  function num(el) {
+    var v = parseFloat(String(el.value).replace(",", "."));
+    return isFinite(v) && v > 0 ? v : 0;
+  }
+
+  function compute() {
+    var list = num(amount), d = num(discount), r = Math.min(num(rate), 100);
+    var net = list * (1 - d / 100);
+    var comm = net * r / 100;
+    var fullComm = list * r / 100;
+    return { list: list, d: d, r: r, net: net, comm: comm, fullComm: fullComm, lost: fullComm - comm };
+  }
+
+  function render() {
+    var c = compute();
+    var lvl = LEVELS.find(function (l) { return c.d <= l.max; });
+    var idx = LEVELS.indexOf(lvl);
+
+    app.dataset.tone = lvl.tone;
+    discount.style.setProperty("--p", (c.d / 40 * 100) + "%");
+    $("discOut").textContent = pct.format(c.d) + "%";
+    document.querySelectorAll(".zones div").forEach(function (z, i) { z.classList.toggle("on", i === idx); });
+
+    $("statusLabel").textContent = lvl.label;
+    $("statusWhy").textContent = lvl.why;
+
+    $("net").textContent = eur.format(c.net);
+    $("list").textContent = eur.format(c.list);
+    $("comm").textContent = eur.format(c.comm);
+    $("commRef").textContent = pct.format(c.r) + "% del prezzo scontato";
+    $("fullComm").textContent = eur.format(c.fullComm);
+
+    var keep = 100 - c.d;
+    $("barKeep").style.width = keep + "%";
+    $("keepPct").textContent = pct.format(keep) + "%";
+    $("lostPct").textContent = pct.format(c.d) + "%";
+
+    $("costLine").innerHTML = c.d === 0 || c.fullComm === 0
+      ? "Nessuno sconto: incassi l'intera commissione sul listino."
+      : "Lo sconto ti costa <b class=\"neg\">" + eur.format(c.lost) + "</b> di commissione rispetto al prezzo di listino.";
+
+    $("yearLost").textContent = eur.format(c.lost * DEALS_PER_YEAR);
+    $("yearComm").textContent = eur.format(c.comm * DEALS_PER_YEAR);
+    $("yearFull").textContent = eur.format(c.fullComm * DEALS_PER_YEAR);
+    $("dealLost").textContent = eur.format(c.lost);
+    $("recover").innerHTML = recoverText(c);
+
+    try { localStorage.setItem(KEY, JSON.stringify({ a: amount.value, d: discount.value, r: rate.value })); } catch (e) {}
+  }
+
+  // Vendite a listino (arrotondate per eccesso) per recuperare la commissione persa in un anno
+  function salesToRecover(c) {
+    return c.fullComm > 0 ? Math.ceil(c.lost * DEALS_PER_YEAR / c.fullComm - 1e-9) : 0;
+  }
+
+  function recoverText(c) {
+    var n = salesToRecover(c);
+    var main = n === 1
+      ? "Con questo sconto, è necessaria <b>1</b> ulteriore vendita a prezzo di listino per recuperare la commissione persa."
+      : "Con questo sconto, sono necessarie <b>" + n + "</b> ulteriori vendite a prezzo di listino per recuperare la commissione persa.";
+    return main + "<small>Calcolato sulla commissione persa in un anno (" + DEALS_PER_YEAR + " transazioni), " +
+      eur.format(c.fullComm) + " di commissione per ogni vendita a listino.</small>";
+  }
+
+  function summary() {
+    var c = compute();
+    return [
+      "Offerta",
+      "Prezzo di listino: " + eur.format(c.list),
+      "Sconto: " + pct.format(c.d) + "%",
+      "Prezzo scontato: " + eur.format(c.net),
+      "Commissione (" + pct.format(c.r) + "%): " + eur.format(c.comm),
+      "Commissione persa per lo sconto: " + eur.format(c.lost),
+      "Commissione persa in un anno (40 transazioni): " + eur.format(c.lost * DEALS_PER_YEAR),
+      "Vendite a listino per recuperarla: " + salesToRecover(c)
+    ].join("\n");
+  }
+
+  $("copy").addEventListener("click", function () {
+    var btn = this, text = summary();
+    var done = function (msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = "Copia riepilogo"; }, 1600); };
+    var fallback = function () {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      done(ok ? "Copiato" : "Copia non riuscita");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done("Copiato"); }, fallback);
+    } else { fallback(); }
+  });
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (saved) { amount.value = saved.a; discount.value = saved.d; rate.value = saved.r; }
+  } catch (e) {}
+
+  [amount, discount, rate].forEach(function (el) { el.addEventListener("input", render); });
+  render();
+})();
+</script>
+</body>
+</html>
