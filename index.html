@@ -163,8 +163,8 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.12); }
 input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--accent-soft); }
 input[type=range]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--accent-soft); }
 
-/* Zone scale under the slider: 0–10 green, 10–25 amber, 25–40 red (proportional widths) */
-.zones { display: grid; grid-template-columns: 10fr 15fr 15fr; gap: 3px; margin-top: -2px; }
+/* Zone scale under the slider: 0–10 green, 11–20 amber, over 20 red (proportional widths) */
+.zones { display: grid; grid-template-columns: 10fr 10fr 20fr; gap: 3px; margin-top: -2px; }
 .zones div { height: 4px; border-radius: 2px; opacity: .35; transition: opacity .2s; }
 .zones div.on { opacity: 1; }
 .z-good { background: var(--good); } .z-warn { background: var(--warn); } .z-bad { background: var(--bad); }
@@ -204,6 +204,23 @@ input[type=range]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--
 .bar-keep { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 5px 0 0 5px; transition: width .12s ease-out; }
 .bar-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; font-family: var(--font-data); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+.annual { display: grid; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+.annual-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.annual-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.annual-head span { font-family: var(--font-data); font-size: 11.5px; color: var(--muted); }
+.annual-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.annual-total .v { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; color: var(--tone); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; transition: color .2s; }
+.annual-total .k { color: var(--muted); font-size: 13.5px; }
+.annual-rows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+@media (max-width: 440px) { .annual-rows { grid-template-columns: minmax(0, 1fr); } }
+.annual-rows div { background: var(--bg); border-radius: 9px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.annual-rows dt { font-size: 12px; color: var(--muted); }
+.annual-rows dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.recover { margin: 0; font-size: 15.5px; }
+.recover b { font-variant-numeric: tabular-nums; }
+.recover small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
 
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; border-top: 1px solid var(--line); padding-block-start: 18px; }
 .foot p { margin: 0; color: var(--muted); font-size: 12.5px; }
@@ -255,7 +272,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
       <div class="field">
         <label for="rate">La mia commissione <span class="hint">sul prezzo scontato</span></label>
-        <div class="input"><input id="rate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="8" style="padding-left:12px"><span>%</span></div>
+        <div class="input"><input id="rate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="12" style="padding-left:12px"><span>%</span></div>
       </div>
     </section>
 
@@ -264,7 +281,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
       <div class="status">
         <span class="dot" aria-hidden="true"></span>
-        <div><strong id="statusLabel">Sconto moderato</strong> <span class="why" id="statusWhy">tra 10% e 25%</span></div>
+        <div><strong id="statusLabel">Sconto moderato</strong> <span class="why" id="statusWhy">dall'11% al 20%</span></div>
       </div>
 
       <div class="figures">
@@ -275,23 +292,40 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         </div>
         <div class="fig">
           <span class="k">La mia commissione</span>
-          <span class="v" id="comm">€ 1.760,00</span>
-          <span class="ref" id="commRef">8% del prezzo scontato</span>
+          <span class="v" id="comm">€ 2.640,00</span>
+          <span class="ref" id="commRef">12% del prezzo scontato</span>
         </div>
       </div>
 
       <div class="cost">
-        <p class="cost-line" id="costLine">Lo sconto ti costa <b class="neg">€ 240,00</b> di commissione rispetto al prezzo di listino.</p>
+        <p class="cost-line" id="costLine">Lo sconto ti costa <b class="neg">€ 360,00</b> di commissione rispetto al prezzo di listino.</p>
         <div class="bar" role="img" id="bar" aria-label="Commissione mantenuta rispetto a quella sul listino"><div class="bar-keep" id="barKeep" style="width:88%"></div></div>
         <div class="bar-legend">
           <span><i class="sw" style="background:var(--accent)"></i>Mantenuta <b id="keepPct">88%</b></span>
           <span><i class="sw" style="background:var(--tone)"></i>Persa per lo sconto <b id="lostPct">12%</b></span>
-          <span>Su listino <b id="fullComm">€ 2.000,00</b></span>
+          <span>Su listino <b id="fullComm">€ 3.000,00</b></span>
         </div>
       </div>
 
+      <div class="annual">
+        <div class="annual-head">
+          <h3>Impatto annuale</h3>
+          <span>10 transazioni a trimestre · 40 all'anno</span>
+        </div>
+        <div class="annual-total">
+          <span class="v" id="yearLost">€ 14.400,00</span>
+          <span class="k">di commissione persa ogni anno con questo sconto</span>
+        </div>
+        <dl class="annual-rows">
+          <div><dt>Commissione annua scontata</dt><dd id="yearComm">€ 105.600,00</dd></div>
+          <div><dt>Commissione annua su listino</dt><dd id="yearFull">€ 120.000,00</dd></div>
+          <div><dt>Persa per transazione</dt><dd id="dealLost">€ 360,00</dd></div>
+        </dl>
+        <p class="recover" id="recover">Con questo sconto, sono necessarie <b>5</b> ulteriori vendite a prezzo di listino per recuperare la commissione persa.</p>
+      </div>
+
       <div class="foot">
-        <p>Soglie: fino al 10% contenuto, fino al 25% moderato, oltre consistente.</p>
+        <p>Soglie: fino al 10% contenuto, dall'11% al 20% moderato, oltre il 20% consistente.</p>
         <button type="button" id="copy">Copia riepilogo</button>
       </div>
     </section>
@@ -304,13 +338,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   var app = $("app"), amount = $("amount"), discount = $("discount"), rate = $("rate");
   var eur = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   var pct = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 });
-  var KEY = "calcolatore-offerte-v1";
+  var KEY = "calcolatore-offerte-v2";
+  var DEALS_PER_YEAR = 40; // 10 transazioni a trimestre
 
   // Soglie dell'indicatore (in % di sconto)
   var LEVELS = [
     { max: 10,  tone: "good", label: "Sconto contenuto",   why: "fino al 10%" },
-    { max: 25,  tone: "warn", label: "Sconto moderato",    why: "tra 10% e 25%" },
-    { max: 100, tone: "bad",  label: "Sconto consistente", why: "oltre il 25%" }
+    { max: 20,  tone: "warn", label: "Sconto moderato",    why: "dall'11% al 20%" },
+    { max: 100, tone: "bad",  label: "Sconto consistente", why: "oltre il 20%" }
   ];
 
   function num(el) {
@@ -354,7 +389,27 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       ? "Nessuno sconto: incassi l'intera commissione sul listino."
       : "Lo sconto ti costa <b class=\"neg\">" + eur.format(c.lost) + "</b> di commissione rispetto al prezzo di listino.";
 
+    $("yearLost").textContent = eur.format(c.lost * DEALS_PER_YEAR);
+    $("yearComm").textContent = eur.format(c.comm * DEALS_PER_YEAR);
+    $("yearFull").textContent = eur.format(c.fullComm * DEALS_PER_YEAR);
+    $("dealLost").textContent = eur.format(c.lost);
+    $("recover").innerHTML = recoverText(c);
+
     try { localStorage.setItem(KEY, JSON.stringify({ a: amount.value, d: discount.value, r: rate.value })); } catch (e) {}
+  }
+
+  // Vendite a listino (arrotondate per eccesso) per recuperare la commissione persa in un anno
+  function salesToRecover(c) {
+    return c.fullComm > 0 ? Math.ceil(c.lost * DEALS_PER_YEAR / c.fullComm - 1e-9) : 0;
+  }
+
+  function recoverText(c) {
+    var n = salesToRecover(c);
+    var main = n === 1
+      ? "Con questo sconto, è necessaria <b>1</b> ulteriore vendita a prezzo di listino per recuperare la commissione persa."
+      : "Con questo sconto, sono necessarie <b>" + n + "</b> ulteriori vendite a prezzo di listino per recuperare la commissione persa.";
+    return main + "<small>Calcolato sulla commissione persa in un anno (" + DEALS_PER_YEAR + " transazioni), " +
+      eur.format(c.fullComm) + " di commissione per ogni vendita a listino.</small>";
   }
 
   function summary() {
@@ -365,7 +420,9 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       "Sconto: " + pct.format(c.d) + "%",
       "Prezzo scontato: " + eur.format(c.net),
       "Commissione (" + pct.format(c.r) + "%): " + eur.format(c.comm),
-      "Commissione persa per lo sconto: " + eur.format(c.lost)
+      "Commissione persa per lo sconto: " + eur.format(c.lost),
+      "Commissione persa in un anno (40 transazioni): " + eur.format(c.lost * DEALS_PER_YEAR),
+      "Vendite a listino per recuperarla: " + salesToRecover(c)
     ].join("\n");
   }
 
